@@ -1,0 +1,53 @@
+{
+  "dataset_size": 237,
+  "train_size": 141,
+  "val_size": 48,
+  "test_size": 48,
+  "feature_cols": [
+    "sterimol_L",
+    "sterimol_B1",
+    "sterimol_B5",
+    "sterimol_burL",
+    "sterimol_burB1",
+    "sterimol_burB5",
+    "vbur_vbur.2",
+    "vbur_vtot.2",
+    "vbur_vbur.3",
+    "nmr_P",
+    "fmo_mu",
+    "fmo_eta",
+    "nbo_P_ra",
+    "vmin_vmin",
+    "E_solv_total",
+    "nbo_bd_e_max",
+    "nbo_lp_P_percent_s"
+  ],
+  "label_col": "vbur_ratio_vbur_vtot",
+  "metrics": {
+    "xgboost": {
+      "rmse": 0.018223794433977474,
+      "mae": 0.014517920179968969,
+      "r2": 0.8574462827098803
+    },
+    "descriptor_attention": {
+      "rmse": 0.03265072986621399,
+      "mae": 0.023001932315030078,
+      "r2": 0.5423992595417715
+    },
+    "smiles_hybrid": {
+      "rmse": 0.023653006142746447,
+      "mae": 0.01729642778489959,
+      "r2": 0.7598549605770736
+    },
+    "ensemble_avg": {
+      "rmse": 0.020127122667477442,
+      "mae": 0.015136169829869615,
+      "r2": 0.8261141198976953
+    }
+  },
+  "superpower_skill": {
+    "repo": "https://github.com/obra/superpowers-skills",
+    "skill": "Meta-Pattern Recognition",
+    "how_used": "Descriptor groups and dual-attention encoding to identify deeper yield-related patterns."
+  }
+}
