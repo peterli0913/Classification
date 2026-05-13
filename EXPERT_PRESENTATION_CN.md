@@ -206,3 +206,18 @@ Dashboard 已升级为“演示模式”，新增：
 
 - `REAL_YIELD_DATA_SOURCES_CN.md`（真实数据来源与命令）
 - `fetch_public_yield_data.py`（一键下载公开数据）
+
+## 10. RDKit + PyG 标准化升级（本次新增）
+
+新增脚本：`yield_bo_rdkit_pyg_pipeline.py`
+
+升级点：
+
+1. **标准 scaffold**：RDKit Bemis-Murcko + GroupKFold
+2. **标准分子图**：RDKit 分子图 -> PyG GCN
+3. **不确定性 + BO 推荐**：bootstrap std + EI/UCB
+4. **已接入交互 Dashboard**：新增 RDKit+PyG 预测与离散候选推荐板块
+
+使用和结果说明见：
+
+- `RDKIT_PYG_RENDER_USAGE_CN.md`

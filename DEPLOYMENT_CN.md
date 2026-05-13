@@ -6,6 +6,7 @@
 - `Dockerfile`
 - `render.yaml`
 - `requirements.txt`
+- `yield_bo_rdkit_pyg_pipeline.py`（RDKit+PyG 训练）
 
 ## 方案 A（推荐）：Render 一键部署
 
@@ -16,7 +17,10 @@
 启动命令已经写在 Dockerfile 中（容器内）：
 
 ```bash
-python3 ligand_interactive_dashboard.py --model-dir ligand_outputs --excel-path "Kraken monophosphine coordinates AD Descriptors.xlsx" --host 0.0.0.0 --port ${PORT}
+python3 fetch_public_yield_data.py --output-dir data
+# 若首次部署没有 RDKit+PyG 产物，会自动训练并缓存
+python3 yield_bo_rdkit_pyg_pipeline.py train ...
+python3 ligand_interactive_dashboard.py --model-dir ligand_outputs --bo2-output-dir yield_bo_pyg_outputs --bo2-candidate-data data/bh-reactions.csv --host 0.0.0.0 --port ${PORT}
 ```
 
 ## 方案 B：任何支持 Docker 的平台
@@ -30,5 +34,7 @@ python3 ligand_interactive_dashboard.py --model-dir ligand_outputs --excel-path 
 - `/`：演示模式 Dashboard（中英文切换、自动讲解词、预测）
 - `/report?lang=zh`：中文 PDF 汇报页
 - `/report?lang=en`：英文 PDF 汇报页
+- `/api/bo2/predict`：RDKit+PyG 预测接口
+- `/api/bo2/suggest`：离散 BO 候选推荐接口
 
 在 `/report` 页面点击“打印/导出 PDF”即可得到可分享版本。

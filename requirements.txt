@@ -4,3 +4,5 @@ xgboost
 matplotlib
 openpyxl
 torch
+rdkit
+torch-geometric
