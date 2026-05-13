@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: ligand-demo-dashboard
+    env: docker
+    plan: free
+    autoDeploy: true

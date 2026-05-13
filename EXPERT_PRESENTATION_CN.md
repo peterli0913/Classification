@@ -181,3 +181,13 @@ python3 ligand_interactive_dashboard.py \
 - 展示项目概览、指标、图像与专业解释；
 - 输入新 ligand 的 SMILES 与 17 维 descriptor；
 - 实时返回三模型与集成预测，以及 descriptor group attention 权重。
+
+## 8. 演示模式升级（本次新增）
+
+Dashboard 已升级为“演示模式”，新增：
+
+1. **中英文一键切换**（适配内部/外部汇报）
+2. **自动讲解词**（项目负责人口吻，避免“AI腔”）
+3. **PDF 导出页**（`/report?lang=zh` 或 `/report?lang=en`）
+
+可部署说明见：`DEPLOYMENT_CN.md`（支持无需本地装包的云端部署流程）。
