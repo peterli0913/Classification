@@ -191,3 +191,18 @@ Dashboard 已升级为“演示模式”，新增：
 3. **PDF 导出页**（`/report?lang=zh` 或 `/report?lang=en`）
 
 可部署说明见：`DEPLOYMENT_CN.md`（支持无需本地装包的云端部署流程）。
+
+## 9. 真实收率与 BO 闭环升级（本次新增）
+
+新增脚本：`yield_bo_discrete_pipeline.py`，用于你当前最关键的下一步：
+
+1. 用真实收率数据重训（默认 `data/bh-reactions.csv`）
+2. 不确定性建模（bootstrap std + quantile 区间）
+3. scaffold group K-fold + 常规 K-fold 验证
+4. SMILES 图模型（轻量 GNN）
+5. 离散候选 BO 推荐（适配离散 feature 空间）
+
+参考文档：
+
+- `REAL_YIELD_DATA_SOURCES_CN.md`（真实数据来源与命令）
+- `fetch_public_yield_data.py`（一键下载公开数据）
