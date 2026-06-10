@@ -106,9 +106,12 @@ python3 yield_bo_rdkit_pyg_pipeline.py suggest \
 启动：
 
 ```bash
-python3 ligand_interactive_dashboard.py \
-  --model-dir ligand_outputs \
-  --excel-path "Kraken monophosphine coordinates AD Descriptors.xlsx" \
+# 本地/高内存环境（完整版）
+python3 ligand_interactive_dashboard.py ...
+
+# Render 免费实例（轻量版）
+python3 render_dashboard_lite.py \
+  --base-summary-path ligand_outputs/results_summary.json \
   --bo2-output-dir yield_bo_pyg_outputs \
   --bo2-candidate-data data/bh-reactions.csv \
   --host 0.0.0.0 \

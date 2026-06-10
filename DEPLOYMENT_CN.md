@@ -20,9 +20,7 @@
 启动命令已经写在 Dockerfile 中（容器内）：
 
 ```bash
-# 构建阶段先完成一次轻量训练，避免启动超时
-python3 yield_bo_rdkit_pyg_pipeline.py train ...
-python3 ligand_interactive_dashboard.py --model-dir ligand_outputs --bo2-output-dir yield_bo_pyg_outputs --bo2-candidate-data data/bh-reactions.csv --host 0.0.0.0 --port ${PORT}
+python3 render_dashboard_lite.py --base-summary-path ligand_outputs/results_summary.json --bo2-output-dir yield_bo_pyg_outputs --bo2-candidate-data data/bh-reactions.csv --host 0.0.0.0 --port ${PORT}
 ```
 
 ## 方案 B：任何支持 Docker 的平台
@@ -33,10 +31,8 @@ python3 ligand_interactive_dashboard.py --model-dir ligand_outputs --bo2-output-
 
 部署后访问：
 
-- `/`：演示模式 Dashboard（中英文切换、自动讲解词、预测）
-- `/report?lang=zh`：中文 PDF 汇报页
-- `/report?lang=en`：英文 PDF 汇报页
+- `/`：Render 轻量版 Dashboard（基础指标 + BO2 预测/推荐）
 - `/api/bo2/predict`：RDKit+PyG 预测接口
 - `/api/bo2/suggest`：离散 BO 候选推荐接口
 
-在 `/report` 页面点击“打印/导出 PDF”即可得到可分享版本。
+> 说明：Render 免费实例内存较小，线上默认使用 `render_dashboard_lite.py`（轻量版）保证稳定运行与 BO2 功能可用。完整版界面可在本地/更高内存实例运行 `ligand_interactive_dashboard.py`。
