@@ -38,6 +38,12 @@ python3 yield_bo_rdkit_pyg_pipeline.py train \
 - `yield_bo_pyg_outputs/figures/rdkit_bootstrap_uncertainty_scatter.png`
 - `yield_bo_pyg_outputs/figures/rdkit_discrete_bo_curve.png`
 
+数据文件默认已在仓库：
+
+- `data/bh-reactions.csv`
+- `data/Dreher_and_Doyle_input_data.xlsx`
+- `data/aap9112_Data_File_S1.xlsx`
+
 ---
 
 ## 3) 核心结果（当前实验）

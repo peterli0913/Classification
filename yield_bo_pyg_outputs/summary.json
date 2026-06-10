@@ -1,0 +1,110 @@
+{
+  "data_path": "data/bh-reactions.csv",
+  "n_samples": 790,
+  "condition_columns": [
+    "reaction",
+    "additive",
+    "base",
+    "aryl halide"
+  ],
+  "smiles_col": "ligand",
+  "target_col": "yield",
+  "test_metrics": {
+    "bootstrap_mean": {
+      "rmse": 7.835082982230943,
+      "mae": 5.7959956597412585,
+      "r2": 0.9316853064441767
+    },
+    "quantile_mean": {
+      "rmse": 10.494799782213004,
+      "mae": 7.995675037974614,
+      "r2": 0.8774325251591264
+    },
+    "gnn_pyg": {
+      "rmse": 36.14489124321376,
+      "mae": 28.35751100020323,
+      "r2": -0.4538539080751902
+    },
+    "uncertainty": {
+      "bootstrap_std_mean": 3.9004733562469482,
+      "quantile_80pct_coverage": 0.7848101265822784,
+      "quantile_interval_mean_width": 37.74761191464349
+    }
+  },
+  "kfold": {
+    "folds": [
+      {
+        "fold": 1,
+        "rmse": 8.666157229683643,
+        "r2": 0.912677847899308,
+        "std_mean": 4.6930060386657715,
+        "n_test": 395
+      },
+      {
+        "fold": 2,
+        "rmse": 9.850989567747911,
+        "r2": 0.8844170022112026,
+        "std_mean": 5.050015449523926,
+        "n_test": 395
+      }
+    ],
+    "aggregate": {
+      "rmse_mean": 9.258573398715777,
+      "rmse_std": 0.5924161690321341,
+      "r2_mean": 0.8985474250552552
+    }
+  },
+  "scaffold_group_kfold": {
+    "folds": [
+      {
+        "fold": 1,
+        "rmse": 9.379708559166687,
+        "r2": 0.9021646149876796,
+        "std_mean": 4.734189033508301,
+        "n_test": 394
+      },
+      {
+        "fold": 2,
+        "rmse": 19.003234005871576,
+        "r2": 0.5117369341627747,
+        "std_mean": 3.6209304332733154,
+        "n_test": 396
+      }
+    ],
+    "aggregate": {
+      "rmse_mean": 14.191471282519132,
+      "rmse_std": 4.8117627233524445,
+      "r2_mean": 0.7069507745752271
+    }
+  },
+  "bo": {
+    "history": [
+      {
+        "iter": 0,
+        "best_yield": 74.97052076
+      },
+      {
+        "iter": 1,
+        "best_yield": 74.97052076
+      },
+      {
+        "iter": 2,
+        "best_yield": 75.97219172
+      },
+      {
+        "iter": 3,
+        "best_yield": 75.97219172
+      },
+      {
+        "iter": 4,
+        "best_yield": 75.97219172
+      }
+    ],
+    "best_yield": 75.97219172
+  },
+  "notes": {
+    "scaffold": "RDKit Bemis-Murcko scaffold via rdkit.Chem.Scaffolds.MurckoScaffold",
+    "gnn": "PyTorch Geometric GCN over ligand molecular graph + one-hot condition context",
+    "bo": "Discrete BO recommendation over candidate pool using uncertainty-aware acquisition"
+  }
+}
