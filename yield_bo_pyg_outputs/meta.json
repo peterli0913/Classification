@@ -1,0 +1,51 @@
+{
+  "cond_cols": [
+    "reaction",
+    "additive",
+    "base",
+    "aryl halide"
+  ],
+  "cond_maps": {
+    "reaction": {
+      "0": 0
+    },
+    "additive": {
+      "C1(C2=CC=CC=C2)=CC=NO1": 0,
+      "C1(C2=CC=CC=C2)=CON=C1": 1,
+      "C1(C2=CC=CC=C2)=NOC=C1": 2,
+      "C1(N(CC2=CC=CC=C2)CC3=CC=CC=C3)=CC=NO1": 3,
+      "C1(N(CC2=CC=CC=C2)CC3=CC=CC=C3)=NOC=C1": 4,
+      "C12=C(C=CC=C2)ON=C1": 5,
+      "C12=CON=C1C=CC=C2": 6,
+      "CC1=C(C(OCC)=O)C=NO1": 7,
+      "CC1=CC(C(OCC)=O)=NO1": 8,
+      "CC1=CC(C)=NO1": 9,
+      "CC1=CC(N2C=CC=C2)=NO1": 10,
+      "CC1=CC=NO1": 11,
+      "CC1=NOC(C(OCC)=O)=C1": 12,
+      "CC1=NOC(C2=CC=CC=C2)=C1": 13,
+      "CC1=NOC=C1": 14,
+      "CCOC(C1=CON=C1)=O": 15,
+      "CCOC(C1=NOC=C1)=O": 16,
+      "COC1=NOC(C(OCC)=O)=C1": 17,
+      "FC(C=CC=C1F)=C1C2=CC=NO2": 18,
+      "O=C(OC)C1=CC=NO1": 19,
+      "O=C(OC)C1=NOC(C2=CC=CO2)=C1": 20,
+      "O=C(OC)C1=NOC(C2=CC=CS2)=C1": 21
+    },
+    "base": {
+      "CC(C)(C)/N=C(N(C)C)/N(C)C": 0,
+      "CN(C)P(N(C)C)(N(C)C)=NP(N(C)C)(N(C)C)=NCC": 1,
+      "CN1CCCN2C1=NCCC2": 2
+    },
+    "aryl halide": {
+      "BrC1=CC=C(CC)C=C1": 0,
+      "ClC1=CC=C(CC)C=C1": 1,
+      "IC1=CC=C(CC)C=C1": 2
+    }
+  },
+  "fp_bits": 1024,
+  "smiles_col": "ligand",
+  "y_col": "yield",
+  "n_bootstrap": 6
+}
