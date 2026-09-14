@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Public HTE yield models — scientific report</title>
+<style>
+ body { font-family: "Source Sans 3", "Segoe UI", sans-serif; margin: 24px auto; max-width: 1080px; color: #1b242b; line-height: 1.45; }
+ h1 { font-size: 28px; margin-bottom: 8px; }
+ h2 { margin-top: 32px; border-bottom: 1px solid #d7dee4; padding-bottom: 4px; }
+ .note { background: #eef5fb; padding: 12px 16px; border-left: 4px solid #2E5A88; }
+ img { max-width: 100%; height: auto; margin: 10px 0 24px; border: 1px solid #e3e8ed; }
+ table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 10px 0 22px; }
+ th, td { border: 1px solid #d5dde3; padding: 6px 8px; }
+ th { background: #f3f6f8; text-align: left; }
+</style>
+</head>
+<body>
+<h1>Public HTE yield models — what actually generalizes</h1>
+<p class="note">Doyle Buchwald–Hartwig (n=3955) and Perera Suzuki–Miyaura (n=5760).
+Random-split R² is interpolation. Quote leave-one-component numbers to chemists.</p>
+
+<h2>1. RMSE under chemically meaningful splits</h2>
+<p>Multi-component fingerprints beat the old ligand-only pipeline on interpolation
+and on unseen additives / products / electrophiles. Leave-one-ligand is ligand-dependent
+(see below), so the mean R² is the wrong headline.</p>
+<img src="figures/bh_rmse_by_split.png" alt="BH RMSE by split"/>
+
+<h2>2. Leave-one-ligand-out is not one number</h2>
+<p>BrettPhos-family ligands transfer. XPhos (PCy<sub>2</sub>) does not. That is a chemical
+result, not a tuning failure.</p>
+<img src="figures/bh_lolo_per_ligand.png" alt="BH per ligand RMSE"/>
+<img src="figures/bh_lolo_per_ligand_scatter.png" alt="BH per ligand scatter"/>
+
+<h2>3. Unseen additives: structure helps 17/22</h2>
+<p>Median leave-one-additive R²: one-hot 0.69 vs multi-FP 0.77.
+Green bars = multi-FP lower RMSE.</p>
+<img src="figures/bh_loao_delta_rmse.png" alt="LOAO delta RMSE"/>
+
+<h2>4. Second reaction class (Suzuki–Miyaura)</h2>
+<p>Random-split R² ~0.85. Leave-one-ligand is dominated by Xantphos (bidentate, different mechanism).
+Fingerprints are not a universal ligand encoder.</p>
+<img src="figures/suzuki_rmse_by_split.png" alt="Suzuki RMSE"/>
+<img src="figures/suzuki_lolo_per_ligand.png" alt="Suzuki per ligand"/>
+
+<h2>5. Calibrated intervals and retrospective BO</h2>
+<p>Split conformal coverage matches the nominal 80/90% levels.
+BO is a pool simulation on BH reaction 0, not a wet experiment.</p>
+<img src="figures/conformal_coverage.png" alt="conformal"/>
+<img src="figures/bo_regret.png" alt="BO regret"/>
+
+<p style="color:#667">Generated from <code>summary.json</code> by <code>hte_make_presentation.py</code>.</p>
+</body></html>
