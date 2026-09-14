@@ -3,341 +3,527 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ligand Feature Modeling — Demo Slides</title>
+  <title>Ligand features, public HTE yields, and discrete BO</title>
   <style>
     :root {
       --navy: #0f172a;
       --blue: #1d4ed8;
-      --ink: #1f2937;
+      --ink: #1e293b;
       --muted: #64748b;
       --line: #e2e8f0;
       --bg: #0b1220;
       --card: #ffffff;
       --soft: #f8fafc;
+      --good: #047857;
+      --bad: #b91c1c;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
-    .deck { height: 100%; display: flex; align-items: center; justify-content: center; padding: 18px 18px 48px; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
+    .deck {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 14px 50px;
+    }
     .slide {
       display: none;
       width: min(1280px, 96vw);
-      height: min(720px, calc(96vh - 36px));
+      height: min(720px, calc(96vh - 40px));
+      aspect-ratio: 16 / 9;
       background: var(--card);
       border-radius: 14px;
-      padding: 42px 52px 36px;
+      padding: 28px 40px 24px;
       box-shadow: 0 16px 50px rgba(0,0,0,.35);
       position: relative;
       overflow: hidden;
     }
     .slide.on { display: flex; flex-direction: column; }
-    .slide.title-slide { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #fff; }
-    .kicker { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 10px; }
+    .slide.title-slide {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 62%, #1d4ed8 100%);
+      color: #fff;
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 7px;
+      background: var(--blue);
+    }
+    .slide.title-slide::before { display: none; }
+    .kicker {
+      font-size: 13px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--blue);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
     .title-slide .kicker { color: #93c5fd; }
-    h1 { font-size: 46px; line-height: 1.15; margin: 0 0 14px; }
-    h2 { font-size: 34px; margin: 0 0 18px; letter-spacing: -.02em; }
-    h3 { font-size: 18px; margin: 0 0 8px; }
-    p, li { font-size: 22px; line-height: 1.4; }
-    .sub { font-size: 22px; color: #dbeafe; max-width: 920px; }
+    h1 { font-size: 40px; line-height: 1.12; margin: 0 0 12px; letter-spacing: -.03em; font-weight: 720; }
+    h2 { font-size: 26px; margin: 0 0 10px; letter-spacing: -.02em; line-height: 1.2; }
+    h3 { font-size: 16px; margin: 0 0 6px; }
+    p, li { font-size: 18px; line-height: 1.38; }
+    .sub { font-size: 20px; color: #dbeafe; max-width: 1000px; margin: 0; }
     .muted { color: var(--muted); }
-    .row { display: grid; gap: 16px; }
+    .row { display: grid; gap: 12px; }
     .c2 { grid-template-columns: 1fr 1fr; }
     .c3 { grid-template-columns: 1fr 1fr 1fr; }
     .c4 { grid-template-columns: repeat(4, 1fr); }
-    .card { background: var(--soft); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-    .title-slide .card { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
-    .kpi { font-size: 40px; font-weight: 750; color: var(--navy); line-height: 1; margin: 8px 0 6px; }
-    .kpi small { font-size: 16px; font-weight: 600; color: var(--muted); }
-    .bar { height: 12px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
-    .bar > i { display: block; height: 100%; background: var(--blue); }
-    table { width: 100%; border-collapse: collapse; font-size: 18px; }
-    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
-    th { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
-    .note { margin-top: auto; font-size: 16px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; }
-    .title-slide .note { border-color: rgba(255,255,255,.2); color: #cbd5e1; }
-    .chip { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--muted); margin-right: 6px; }
-    .warn { background: #fff7ed; border-color: #fdba74; }
-    .good { color: #047857; }
-    .bad { color: #b91c1c; }
-    .nav {
-      position: fixed; left: 0; right: 0; bottom: 10px;
-      display: flex; justify-content: center; align-items: center; gap: 8px;
-      color: #94a3b8; font-size: 13px; user-select: none;
+    .card {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; cursor: pointer; }
+    .title-slide .card {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.16);
+    }
+    .title-slide .card h3 { color: #93c5fd; }
+    .title-slide .card p { color: #e2e8f0; }
+    .kpi { font-size: 34px; font-weight: 750; color: var(--navy); line-height: 1; margin: 8px 0 6px; }
+    .kpi.sm { font-size: 24px; margin-top: 8px; }
+    .warn { background: #fff7ed; border-color: #fdba74; }
+    .good { color: var(--good); }
+    .bad { color: var(--bad); }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+    tr.hl td { background: #eff6ff; font-weight: 650; }
+    .note {
+      margin-top: auto;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+    }
+    .title-slide .note { border-color: rgba(255,255,255,.2); color: #cbd5e1; }
+    .nav {
+      position: fixed; left: 0; right: 0; bottom: 8px;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
+      color: #94a3b8; font-size: 13px; user-select: none; z-index: 5;
+    }
+    .nav button {
+      background: #1e293b; color: #e2e8f0; border: 0; border-radius: 8px;
+      padding: 4px 10px; cursor: pointer; font-size: 13px;
+    }
+    .dots { display: flex; gap: 4px; flex-wrap: wrap; max-width: 70vw; justify-content: center; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #334155; cursor: pointer; }
     .dot.on { background: #93c5fd; }
-    .help { position: fixed; top: 12px; right: 16px; color: #64748b; font-size: 12px; }
-    ul { margin: 8px 0 0 20px; padding: 0; }
-    li { margin: 6px 0; }
-    .small { font-size: 17px; line-height: 1.45; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; }
+    .help {
+      position: fixed; top: 10px; right: 14px;
+      color: #94a3b8; font-size: 12px; z-index: 5;
+    }
+    ul { margin: 6px 0 0 18px; padding: 0; }
+    li { margin: 5px 0; }
+    .small { font-size: 16px; line-height: 1.38; }
+    .tiny { font-size: 13px; line-height: 1.35; color: var(--muted); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+    .fill { flex: 1; min-height: 0; }
+    .fig-stage {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 6px 10px;
+    }
+    .fig-stage img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+    .conclusion {
+      margin-top: 10px;
+      font-size: 17px;
+      line-height: 1.35;
+      font-weight: 650;
+      color: var(--navy);
+      border-left: 4px solid var(--blue);
+      padding: 2px 0 2px 12px;
+    }
+    .foot {
+      position: absolute;
+      right: 40px; bottom: 10px;
+      font-size: 11px; color: #94a3b8;
+    }
+    .slide.title-slide .foot { color: #93c5fd; }
     @media print {
-      body { background: #fff; }
-      .deck { display: block; padding: 0; }
-      .slide { display: flex !important; width: 1280px; height: 720px; margin: 0 auto 16px; box-shadow: none; page-break-after: always; border-radius: 0; }
-      .nav, .help { display: none; }
+      @page { size: 13.333in 7.5in landscape; margin: 0; }
+      html, body { background: #fff; height: auto; }
+      .deck { display: block; padding: 0; height: auto; }
+      .slide {
+        display: flex !important;
+        width: 13.333in;
+        height: 7.5in;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+        page-break-after: always;
+        break-after: page;
+      }
+      .slide:last-of-type { page-break-after: auto; }
+      .nav, .help { display: none !important; }
     }
   </style>
 </head>
 <body>
-  <div class="help">← → Space  ·  Home/End  ·  P print</div>
+  <div class="help">← → Space · Home/End · F fullscreen · P print</div>
   <div class="deck" id="deck">
 
-    <section class="slide title-slide on">
-      <div class="kicker">Technical demo  ·  ligand dashboard</div>
-      <h1>Ligand feature modeling,<br>interpretation, and discrete BO</h1>
-      <p class="sub">English slide version of the interactive dashboard: prediction, explanation, and next-experiment ranking in one story.</p>
-      <div class="row c3" style="margin-top:28px;">
-        <div class="card"><h3>Track A</h3><p class="small">Kraken descriptors → XGBoost / attention / SMILES hybrid</p></div>
-        <div class="card"><h3>Track B</h3><p class="small">Public BH yields → RDKit fingerprints + bootstrap + EI</p></div>
-        <div class="card"><h3>Use</h3><p class="small">Show what the live dashboard does, with the actual numbers behind it.</p></div>
+    <section class="slide title-slide on" data-sec="Title">
+      <div class="kicker">Kraken descriptors · Doyle / Perera public HTE · discrete BO</div>
+      <h1>Ligand feature modeling and public yield generalization</h1>
+      <p class="sub">Held-out numbers from the checked-in JSON artifacts. Plots are the real pipeline figures, not placeholders.</p>
+      <div class="row c3" style="margin-top:22px;">
+        <div class="card"><h3>Kraken track</h3><p class="small">237 monophosphines, 17 descriptors. Label is <b>vbur_ratio_vbur_vtot</b> — a buried-volume ratio, not yield.</p></div>
+        <div class="card"><h3>Public HTE yields</h3><p class="small">Doyle BH n=3955 and Perera Suzuki n=5760. Random-split R² is interpolation; leave-one-component is the test.</p></div>
+        <div class="card"><h3>Discrete BO</h3><p class="small">Retrospective ranking inside an existing BH condition pool. UCB beats random; the method does not invent ligands.</p></div>
       </div>
-      <div class="note">Same content as ligand_interactive_dashboard.py · press → to advance</div>
+      <div class="note">Sources: ligand_outputs/results_summary.json · yield_bo_pyg_outputs/summary.json · hte_scientific_outputs/summary.json</div>
     </section>
 
-    <section class="slide">
-      <div class="kicker">Agenda</div>
-      <h2>Five blocks, same order as the demo page</h2>
-      <div class="row c2" style="flex:1;">
+    <section class="slide" data-sec="Headlines">
+      <div class="kicker">Results</div>
+      <h2>What the numbers establish</h2>
+      <div class="row c3 fill">
         <div class="card">
-          <ol>
-            <li>Base-model performance</li>
-            <li>Base-model figures — how to read them</li>
-            <li>Interactive prediction</li>
-            <li>RDKit + PyG + discrete BO</li>
-            <li>Talk track for the room</li>
-          </ol>
+          <h3>Interpolation is already strong</h3>
+          <p class="small">Kraken XGBoost R² <b>0.857</b> (RMSE 0.0182) on buried-volume ratio. BH multi-FP XGB random 5-fold R² <b>0.938</b> (RMSE 6.77). Doyle reaction-0 bootstrap R² <b>0.932</b> (RMSE 7.84).</p>
         </div>
         <div class="card">
-          <h3>How to use this deck</h3>
-          <p class="small">This is the presentation layer. The dashboard is the live layer: paste a SMILES, get a label, then rank a discrete condition pool with EI.</p>
-          <p class="small muted">If someone asks for a click-through, switch to the running dashboard after slide 7.</p>
-        </div>
-      </div>
-      <div class="note">Do not mix the two labels. Track A is not experimental yield.</div>
-    </section>
-
-    <section class="slide">
-      <div class="kicker">1 · Base model · data</div>
-      <h2>Kraken monophosphines, 17 descriptors</h2>
-      <div class="row c4">
-        <div class="card"><div class="muted">Ligands</div><div class="kpi">237</div><div class="muted">train / val / test 141 / 48 / 48</div></div>
-        <div class="card"><div class="muted">Features</div><div class="kpi">17</div><div class="muted">Excel columns O–AE</div></div>
-        <div class="card"><div class="muted">SMILES</div><div class="kpi">J</div><div class="muted">used only in the hybrid model</div></div>
-        <div class="card warn"><div class="muted">Label (AF)</div><div class="kpi" style="font-size:26px;margin-top:12px;">vbur ratio</div><div class="muted">buried-volume ratio, not yield</div></div>
-      </div>
-      <div class="row c2" style="margin-top:16px;">
-        <div class="card">
-          <h3>Attention groups</h3>
-          <p class="small">O–Q (3) · R–T (3) · U–W (3) · X–AE (8)</p>
-          <p class="small muted">Groups are treated as tokens so we can say which descriptor family the network is using.</p>
+          <h3>Transfer is chemistry-dependent</h3>
+          <p class="small">BH leave-one-ligand mean R² is only <b>0.36</b> because XPhos fails (R² ≈ −0.92). BrettPhos family transfers (multi-FP R² 0.94 / 0.90). Multi-FP lowers RMSE on <b>17/22</b> unseen additives.</p>
         </div>
         <div class="card">
-          <h3>Why this track still matters</h3>
-          <p class="small">It is the fast, interpretable layer: steric / solvation / electronic descriptors, group weights, 2D embedding. Use it to talk chemistry, not to claim a process yield.</p>
+          <h3>Trees beat graphs; intervals are calibrated</h3>
+          <p class="small">Ligand GIN R² <b>0.185</b> vs tree R² 0.94 (four unique ligand graphs). Split conformal 80/90% coverage is <b>0.796 / 0.891</b>. Retrospective UCB ends at <b>84.3</b> vs random <b>81.8</b> (pool max 86.6).</p>
         </div>
       </div>
     </section>
 
-    <section class="slide">
-      <div class="kicker">1 · Base model · methods</div>
-      <h2>Four estimators, one comparison table</h2>
-      <div class="row c2">
+    <section class="slide" data-sec="Labels">
+      <div class="kicker">Scope</div>
+      <h2>Two labels sit in the same repo and are not interchangeable</h2>
+      <div class="row c2 fill">
         <div class="card">
-          <h3>XGBoost</h3>
-          <p class="small">Strong small-n baseline. Feature importances are the first thing a chemist can argue with.</p>
+          <h3>Kraken monophosphines — buried-volume ratio</h3>
+          <p class="small">n=237 · train/val/test 141/48/48 · 17 Kraken descriptors (Excel O–AE) · SMILES only in the hybrid model.</p>
+          <p class="small">Target column: <span class="mono">vbur_ratio_vbur_vtot</span>. XGBoost R² 0.8574 is a fit to that ratio, not a process yield.</p>
+          <p class="tiny">ligand_outputs/results_summary.json</p>
         </div>
         <div class="card">
-          <h3>Descriptor attention</h3>
-          <p class="small">Each group is a token. Self-attention returns group weights. Weaker fit, used for explanation.</p>
-        </div>
-        <div class="card">
-          <h3>SMILES + descriptor hybrid</h3>
-          <p class="small">BiGRU over characters + the 17-D vector. Tests whether structure adds anything beyond Kraken descriptors.</p>
-        </div>
-        <div class="card">
-          <h3>Ensemble average</h3>
-          <p class="small">Mean of the three. More stable than attention alone; does not beat XGBoost on this split.</p>
+          <h3>Public HTE — experimental yield</h3>
+          <p class="small">Dashboard slice: Doyle BH reaction 0, n=790, four ligands. Full scientific table: n=3955 (same four ligands × 22 additives × 3 bases × 15 aryl halides × 5 products).</p>
+          <p class="small">Suzuki–Miyaura n=5760 is HPLC area%, a different physical quantity. Absolute RMSE is not comparable across the two reaction classes.</p>
+          <p class="tiny">yield_bo_pyg_outputs/summary.json · hte_scientific_outputs/summary.json</p>
         </div>
       </div>
-      <div class="note">Dashboard section: “1) Base-model performance”.</div>
     </section>
 
-    <section class="slide">
-      <div class="kicker">1 · Base model · held-out test</div>
-      <h2>XGBoost is the workhorse</h2>
+    <section class="slide" data-sec="Kraken">
+      <div class="kicker">Kraken · held-out test n=48</div>
+      <h2>XGBoost is the workhorse on the buried-volume-ratio label</h2>
       <div class="row c4">
         <div class="card"><h3>XGBoost</h3><div class="kpi">0.857</div><div class="muted">R² · RMSE 0.0182 · MAE 0.0145</div></div>
-        <div class="card"><h3>SMILES hybrid</h3><div class="kpi">0.760</div><div class="muted">R² · RMSE 0.0237</div></div>
-        <div class="card"><h3>Ensemble avg</h3><div class="kpi">0.826</div><div class="muted">R² · RMSE 0.0201</div></div>
-        <div class="card"><h3>Attention</h3><div class="kpi">0.542</div><div class="muted">R² · RMSE 0.0327</div></div>
+        <div class="card"><h3>Ensemble avg</h3><div class="kpi">0.826</div><div class="muted">R² · RMSE 0.0201 · MAE 0.0151</div></div>
+        <div class="card"><h3>SMILES hybrid</h3><div class="kpi">0.760</div><div class="muted">R² · RMSE 0.0237 · MAE 0.0173</div></div>
+        <div class="card"><h3>Attention</h3><div class="kpi">0.542</div><div class="muted">R² · RMSE 0.0327 · MAE 0.0230</div></div>
       </div>
-      <div class="card" style="margin-top:18px;">
-        <table>
-          <thead><tr><th>Model</th><th>RMSE</th><th>MAE</th><th>R²</th><th>Role in the demo</th></tr></thead>
-          <tbody>
-            <tr><td>XGBoost</td><td>0.0182</td><td>0.0145</td><td class="good">0.8574</td><td>Quote this number</td></tr>
-            <tr><td>SMILES hybrid</td><td>0.0237</td><td>0.0173</td><td>0.7599</td><td>Structure adds signal</td></tr>
-            <tr><td>Ensemble avg</td><td>0.0201</td><td>0.0151</td><td>0.8261</td><td>Stability, not SOTA</td></tr>
-            <tr><td>Descriptor attention</td><td>0.0327</td><td>0.0230</td><td>0.5424</td><td>Group weights only</td></tr>
-          </tbody>
-        </table>
+      <div class="card" style="margin-top:12px;">
+        <p class="small">Character-level SMILES adds signal beyond the 17 descriptors (hybrid R² 0.760 vs attention 0.542) and still loses to trees. Group attention is an explanation head: mean weights O–Q 0.25, R–T 0.15, U–W 0.32, X–AE 0.28.</p>
+        <p class="small">Top XGBoost importances: <b>sterimol_B1 0.260</b>, <b>E_solv_total 0.185</b>, <b>sterimol_B5 0.118</b>, sterimol_burL 0.076, vbur_vbur.2 0.073.</p>
       </div>
     </section>
 
-    <section class="slide">
-      <div class="kicker">1 · Base model · explanation</div>
-      <h2>Top features and group attention</h2>
-      <div class="row c2" style="flex:1;">
-        <div class="card">
-          <h3>XGBoost importance</h3>
-          <div class="small" style="margin-top:10px;">
-            <div>sterimol_B1 <b>0.260</b></div><div class="bar"><i style="width:100%"></i></div>
-            <div style="margin-top:8px;">E_solv_total <b>0.185</b></div><div class="bar"><i style="width:71%"></i></div>
-            <div style="margin-top:8px;">sterimol_B5 <b>0.118</b></div><div class="bar"><i style="width:45%"></i></div>
-            <div style="margin-top:8px;">sterimol_burL <b>0.076</b></div><div class="bar"><i style="width:29%"></i></div>
-            <div style="margin-top:8px;">vbur_vbur.2 <b>0.073</b></div><div class="bar"><i style="width:28%"></i></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Mean group attention</h3>
-          <p class="small">O–Q 0.25 · R–T 0.15 · <b>U–W 0.32</b> · X–AE 0.28</p>
-          <p class="small">Shape (Sterimol / buried volume) and solvation/electronics move together. Attention is not the best predictor; it is the map of which family the network leaned on.</p>
-          <p class="small muted">Dashboard table: Top Features (XGBoost). Chart: group attention after a live predict.</p>
-        </div>
+    <section class="slide" data-sec="Kraken">
+      <div class="kicker">Kraken · figure</div>
+      <h2>Model comparison on the held-out Kraken test set</h2>
+      <div class="fig-stage">
+        <img src="ligand_outputs/figures/model_performance.png" alt="Kraken RMSE, MAE, and R2 by model" />
       </div>
+      <p class="conclusion">XGBoost has the lowest RMSE (0.0182) and highest R² (0.857). The ensemble is insurance, not a better head; attention is the weakest predictor.</p>
     </section>
 
-    <section class="slide">
-      <div class="kicker">2 · Base-model figures</div>
-      <h2>What to say on each plot</h2>
-      <div class="row c2">
-        <div class="card">
-          <h3>2D embedding (t-SNE)</h3>
-          <p class="small">Ask whether similar labels cluster. If they do, the latent space is usable for candidate shortlists.</p>
-        </div>
-        <div class="card">
-          <h3>Actual vs predicted</h3>
-          <p class="small">Closer to the diagonal is better. Large outliers are the next debug list, not decoration.</p>
-        </div>
-        <div class="card">
-          <h3>Performance comparison</h3>
-          <p class="small">XGBoost is the stable head. Sequence and attention are complements, not replacements.</p>
-        </div>
-        <div class="card">
-          <h3>Group-attention heatmap</h3>
-          <p class="small">If different ligands light up different groups, split the next experimental batch by mechanism, not by a single global ranking.</p>
-        </div>
+    <section class="slide" data-sec="Kraken">
+      <div class="kicker">Kraken · figure</div>
+      <h2>Parity: predicted vs true buried-volume ratio</h2>
+      <div class="fig-stage">
+        <img src="ligand_outputs/figures/actual_vs_predicted.png" alt="Actual vs predicted buried-volume ratio for four models" />
       </div>
-      <div class="note">Live dashboard serves these from ligand_outputs/figures/. Missing files mean the base pipeline has not been re-run in this checkout.</div>
+      <p class="conclusion">XGBoost stays on the diagonal. Attention residuals are large enough that those scores are explanation-only, not a second yield-like readout.</p>
     </section>
 
-    <section class="slide">
-      <div class="kicker">3 · Interactive prediction</div>
-      <h2>What the live box actually does</h2>
-      <div class="row c2">
-        <div class="card">
-          <h3>Input</h3>
-          <p class="small">SMILES + 17 comma-separated descriptors, same order as the training columns.</p>
-          <p class="mono">sterimol_L, B1, B5, burL, burB1, burB5, vbur…, nmr_P, fmo_μ, fmo_η, nbo, vmin, E_solv, …</p>
-        </div>
-        <div class="card">
-          <h3>Output</h3>
-          <p class="small">Four numbers: XGBoost, attention, SMILES hybrid, ensemble average — plus the four group weights as a bar chart.</p>
-        </div>
+    <section class="slide" data-sec="Kraken">
+      <div class="kicker">Kraken · figure</div>
+      <h2>XGBoost ranks minimum width and solvation first</h2>
+      <div class="fig-stage">
+        <img src="ligand_outputs/figures/xgboost_feature_importance.png" alt="XGBoost feature importance for 17 Kraken descriptors" />
       </div>
-      <div class="card" style="margin-top:16px;">
-        <h3>Demo move</h3>
-        <p class="small">Click <b>Load sample</b> (first Kraken row) → <b>Run prediction</b>. Then say: “this is a buried-volume-ratio prior, not a Buchwald yield.” Switch to the BO panel for yield.</p>
-      </div>
-      <div class="note">API on the dashboard: POST /api/predict</div>
+      <p class="conclusion">sterimol_B1 (0.260) and E_solv_total (0.185) dominate; electronic terms (NBO, FMO, nmr_P) sit lower. This is a steric/solvation ranking of a buried-volume-ratio model.</p>
     </section>
 
-    <section class="slide">
-      <div class="kicker">4 · RDKit + PyG + BO</div>
-      <h2>True-yield track on Doyle BH, reaction 0</h2>
+    <section class="slide" data-sec="Kraken">
+      <div class="kicker">Kraken · figure</div>
+      <h2>Attention latent space colored by the same vbur ratio</h2>
+      <div class="fig-stage">
+        <img src="ligand_outputs/figures/ligand_embedding_tsne.png" alt="t-SNE of descriptor-attention latent space" />
+      </div>
+      <p class="conclusion">The 2D embedding is organized by vbur_ratio_vbur_vtot. Nearby ligands share similar buried-volume-ratio labels, which is a shortlist geometry, not a reaction-family map.</p>
+    </section>
+
+    <section class="slide" data-sec="Kraken">
+      <div class="kicker">Kraken · figure</div>
+      <h2>Group attention is ligand-dependent</h2>
+      <div class="fig-stage">
+        <img src="ligand_outputs/figures/descriptor_group_attention_heatmap.png" alt="Descriptor group attention heatmap on test ligands" />
+      </div>
+      <p class="conclusion">U–W (buried volume) and X–AE (electronics/solvation) carry most mass on average, but several test ligands flip U–W vs O–Q, so one global importance vector is incomplete.</p>
+    </section>
+
+    <section class="slide" data-sec="Yield">
+      <div class="kicker">Doyle BH · reaction 0 (dashboard slice)</div>
+      <h2>Random-split R² 0.93 is interpolation; scaffold RMSE is 14.2</h2>
       <div class="row c3">
-        <div class="card"><div class="muted">Public reactions used</div><div class="kpi">790</div><div class="muted">one product / reaction id 0</div></div>
-        <div class="card"><div class="muted">Bootstrap XGB + Morgan</div><div class="kpi">0.932</div><div class="muted">test R² · RMSE 7.84</div></div>
-        <div class="card"><div class="muted">PyG GNN</div><div class="kpi bad">−0.45</div><div class="muted">R² · RMSE 36.1 · not the workhorse</div></div>
+        <div class="card"><div class="muted">Bootstrap XGB + Morgan</div><div class="kpi">0.932</div><div class="muted">test R² · RMSE 7.84 · MAE 5.80</div></div>
+        <div class="card"><div class="muted">Quantile mean</div><div class="kpi">0.877</div><div class="muted">R² · RMSE 10.49 · 80% cover 0.785</div></div>
+        <div class="card"><div class="muted">PyG GNN</div><div class="kpi bad">−0.45</div><div class="muted">R² · RMSE 36.1 · four ligand graphs</div></div>
       </div>
-      <div class="row c2" style="margin-top:16px;">
+      <div class="row c2" style="margin-top:12px;">
         <div class="card">
-          <h3>Random-split k-fold</h3>
-          <p class="small">RMSE 9.26 · R² 0.90. This is interpolation over the same four ligands.</p>
+          <h3>Random 2-fold</h3>
+          <p class="small">RMSE <b>9.26</b> ± 0.59 · R² <b>0.899</b>. Same four ligands on both sides of the split.</p>
         </div>
-        <div class="card">
+        <div class="card warn">
           <h3>Murcko scaffold GroupKFold</h3>
-          <p class="small">RMSE <b>14.19</b> · R² <b>0.71</b> (fold-level 0.90 and 0.51). Quote this, not 0.93, when someone asks about new chemistry.</p>
+          <p class="small">RMSE <b>14.19</b> ± 4.81 · R² <b>0.707</b> (fold R² 0.90 and 0.51). That is the generalization number for this 790-row slice.</p>
         </div>
       </div>
-      <div class="note">Dashboard cards: Bootstrap / PyG GNN / Scaffold CV. Quantile 80% coverage on that split was 0.78.</div>
+      <div class="note">n=790 · one product · yield_bo_pyg_outputs/summary.json. Ligands: tBuXPhos, AdBrettPhos, tBuBrettPhos, XPhos.</div>
     </section>
 
-    <section class="slide">
-      <div class="kicker">4 · Discrete recommendations</div>
-      <h2>EI-ranked next experiments (reaction 0)</h2>
+    <section class="slide" data-sec="Yield">
+      <div class="kicker">Doyle BH · reaction 0 · figure</div>
+      <h2>Bootstrap predictions track yield; uncertainty is not uniform</h2>
+      <div class="fig-stage">
+        <img src="yield_bo_pyg_outputs/figures/rdkit_bootstrap_uncertainty_scatter.png" alt="Bootstrap predicted vs true yield with predictive standard deviation" />
+      </div>
+      <p class="conclusion">Test R² 0.932 with mean bootstrap std 3.90 yield points. The quantile 80% interval is wide (mean width 37.7) and slightly under-covered (0.785 vs 0.80).</p>
+    </section>
+
+    <section class="slide" data-sec="Yield">
+      <div class="kicker">Doyle BH · reaction 0 · EI ranking</div>
+      <h2>Top EI rows sit on MTBD × 4-ethyl haloarene × isoxazoles</h2>
       <table>
         <thead>
-          <tr><th>#</th><th>Ligand</th><th>ArX</th><th>True y</th><th>Pred</th><th>Std</th><th>EI</th></tr>
+          <tr><th>#</th><th>Ligand</th><th>Additive</th><th>Base</th><th>ArX</th><th>True y</th><th>Pred</th><th>Std</th><th>EI</th></tr>
         </thead>
         <tbody>
-          <tr><td>1</td><td>tBuXPhos</td><td>4-Et-C6H4-I</td><td>84.9</td><td>86.3</td><td>2.74</td><td>0.95</td></tr>
-          <tr><td>2</td><td>AdBrettPhos</td><td>4-Et-C6H4-I</td><td>83.1</td><td>86.1</td><td>2.60</td><td>0.81</td></tr>
-          <tr><td>3</td><td>tBuXPhos</td><td>4-Et-C6H4-Br</td><td>86.6</td><td>81.8</td><td>5.02</td><td>0.45</td></tr>
-          <tr><td>4</td><td>AdBrettPhos</td><td>4-Et-C6H4-I</td><td>82.6</td><td>84.8</td><td>2.44</td><td>0.33</td></tr>
-          <tr><td>5</td><td>AdBrettPhos</td><td>4-Et-C6H4-I</td><td>85.9</td><td>85.4</td><td>1.66</td><td>0.22</td></tr>
+          <tr class="hl"><td>1</td><td>tBuXPhos</td><td>5-Me-isoxazole-4-CO<sub>2</sub>Et</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-I</td><td>84.9</td><td>86.3</td><td>2.74</td><td>0.95</td></tr>
+          <tr><td>2</td><td>AdBrettPhos</td><td>3-methylisoxazole</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-I</td><td>83.1</td><td>86.1</td><td>2.60</td><td>0.81</td></tr>
+          <tr><td>3</td><td>tBuXPhos</td><td>5-Me-isoxazole-4-CO<sub>2</sub>Et</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-Br</td><td>86.6</td><td>81.8</td><td>5.02</td><td>0.45</td></tr>
+          <tr><td>4</td><td>AdBrettPhos</td><td>3-phenylisoxazole</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-I</td><td>82.6</td><td>84.8</td><td>2.44</td><td>0.33</td></tr>
+          <tr><td>5</td><td>AdBrettPhos</td><td>5-Me-isoxazole-4-CO<sub>2</sub>Et</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-I</td><td>85.9</td><td>85.4</td><td>1.66</td><td>0.22</td></tr>
+          <tr><td>6</td><td>tBuBrettPhos</td><td>4-phenylisoxazole</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-I</td><td>83.3</td><td>78.1</td><td>5.94</td><td>0.21</td></tr>
+          <tr><td>7</td><td>AdBrettPhos</td><td>benzisoxazole</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-I</td><td>70.3</td><td>57.4</td><td>15.58</td><td>0.18</td></tr>
+          <tr><td>8</td><td>tBuXPhos</td><td>3-phenylisoxazole</td><td>MTBD</td><td>4-Et-C<sub>6</sub>H<sub>4</sub>-Br</td><td>83.1</td><td>81.7</td><td>3.57</td><td>0.14</td></tr>
         </tbody>
       </table>
-      <p class="small muted" style="margin-top:12px;">Shared pattern in the top rows: MTBD base, isoxazole additives, 4-ethyl haloarene. This is ranking inside an existing combinatorial pool — not a new molecule generator.</p>
-      <div class="note">Dashboard buttons: Load BO sample · Run RDKit+PyG prediction · Recommend next candidates. APIs: /api/bo2/predict, /api/bo2/suggest</div>
+      <p class="conclusion">Row 7 is high-EI because std is 15.6, not because the mean is high. This ranks existing tuples; it does not generate new ligands. XPhos is in the pool and is absent from the top eight.</p>
     </section>
 
-    <section class="slide">
-      <div class="kicker">5 · Talk track</div>
-      <h2>What to say, in this order</h2>
-      <div class="card" style="flex:1;">
-        <p>Bottom line: we run two tracks in one interface — base interpretation, and RDKit/PyG true-yield modeling.</p>
-        <p>Base track is stable. The features a chemist should argue with first are <b>sterimol_B1 (0.260)</b>, <b>E_solv_total (0.185)</b>, and <b>sterimol_B5 (0.118)</b>.</p>
-        <p>The yield track uses Murcko scaffold checks. Mean scaffold RMSE is about <b>14.2</b> yield points, not the random-split 7.8.</p>
-        <p>For a next wet-lab shortlist, take the EI table — starting with tBuXPhos / AdBrettPhos × 4-ethyl-iodobenzene × MTBD — then look at the uncertainty column, not only the mean.</p>
+    <section class="slide" data-sec="Yield">
+      <div class="kicker">Doyle BH · reaction 0 · figure</div>
+      <h2>Logged dashboard BO loop on the same 790-row pool</h2>
+      <div class="fig-stage">
+        <img src="yield_bo_pyg_outputs/figures/rdkit_discrete_bo_curve.png" alt="Short discrete BO progress curve from the dashboard pipeline" />
       </div>
-      <div class="note">Copied from the dashboard English talk track, with the real scaffold RMSE filled in.</div>
+      <p class="conclusion">The short logged run moved best observed yield from 74.97 to 75.97. The EI table already contains mid-80s conditions; this curve is a 5-iteration trace, not the 8-seed campaign.</p>
     </section>
 
-    <section class="slide">
-      <div class="kicker">Close</div>
-      <h2>What is ready, what is not</h2>
-      <div class="row c2">
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · full tables</div>
+      <h2>Chemically meaningful splits on Doyle 3955 and Perera 5760</h2>
+      <div class="row c2 fill">
         <div class="card">
-          <h3>Ready to show</h3>
+          <h3>Buchwald–Hartwig · Ahneman / Doyle 2018</h3>
+          <p class="small">n=<b>3955</b> · 4 ligands × 22 additives × 3 bases × 15 aryl halides × 5 products. Isolated-style yield.</p>
+          <p class="small">Models: main-effects ANOVA, one-hot XGB, ligand-only FP XGB (previous pipeline), multi-component FP XGB, residual XGB.</p>
+        </div>
+        <div class="card">
+          <h3>Suzuki–Miyaura · Perera 2018</h3>
+          <p class="small">n=<b>5760</b> · 11 named ligands + no-ligand. Label is HPLC area%, not the same quantity as BH yield.</p>
+          <p class="small">Second reaction class so a strong BH interpolation curve is not treated as a universal encoder.</p>
+        </div>
+      </div>
+      <div class="note">The 790-row dashboard slice is reaction 0 of this BH table. Full-table leave-one-component numbers are the scientific check.</div>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · BH metrics</div>
+      <h2>Multi-component fingerprints help where the held-out piece has structure</h2>
+      <table>
+        <thead>
+          <tr><th>Split</th><th>Main-eff R²</th><th>One-hot R²</th><th>Ligand-FP R²</th><th>Multi-FP R²</th><th>Multi-FP RMSE</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Random 5-fold</td><td>0.601</td><td>0.906</td><td>0.908</td><td class="good">0.938</td><td>6.77</td></tr>
+          <tr><td>Leave-one-ligand (mean)</td><td>−0.047</td><td>0.361</td><td>0.388</td><td>0.365</td><td>14.64</td></tr>
+          <tr><td>Leave-one-product</td><td>−0.127</td><td>−0.340</td><td>−0.293</td><td class="good">0.084</td><td>21.64</td></tr>
+          <tr><td>Unseen additives (GroupKFold)</td><td>0.421</td><td>0.626</td><td>0.625</td><td class="good">0.718</td><td>14.25</td></tr>
+          <tr><td>Leave-one-additive ×22 (mean)</td><td>—</td><td>0.223</td><td>0.219</td><td class="good">0.451</td><td>13.58</td></tr>
+          <tr><td>Unseen aryl halide</td><td>−0.523</td><td>−0.373</td><td>−0.366</td><td class="good">0.152</td><td>17.27</td></tr>
+        </tbody>
+      </table>
+      <p class="conclusion">Leave-one-additive <b>median</b> is the stable summary: one-hot R² 0.69 / RMSE 14.3 vs multi-FP R² 0.77 / RMSE 12.5. Mean leave-one-ligand R² 0.36 is pulled down by XPhos.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Buchwald–Hartwig RMSE under chemically meaningful splits</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bh_rmse_by_split.png" alt="BH RMSE by split and model" />
+      </div>
+      <p class="conclusion">Multi-FP / residual XGB cut random-split RMSE to 6.77–6.72. On unseen additives and aryl halides they still beat one-hot and ligand-only FP; leave-one-ligand stays ~14.6 because transfer is ligand-specific.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>The same BH splits as R²</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bh_r2_by_split.png" alt="BH R2 by split and model" />
+      </div>
+      <p class="conclusion">Random-split R² 0.94 is interpolation. Multi-FP is the only model with positive mean R² on unseen products (0.084) and unseen aryl halides (0.152); leave-one-ligand error bars span from transfer to failure.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Leave-one-ligand-out RMSE depends on which Buchwald ligand is held out</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bh_lolo_per_ligand.png" alt="Leave-one-ligand-out RMSE by Buchwald ligand" />
+      </div>
+      <p class="conclusion">tBuBrettPhos and AdBrettPhos transfer (multi-FP RMSE 7.26 / 9.11). tBuXPhos gets worse under fingerprints (17.95 vs one-hot 13.71). XPhos (PCy<sub>2</sub>) fails for every model (~24–25 RMSE, R² ≈ −1).</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Per-ligand parity on Doyle BH leave-one-ligand-out</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bh_lolo_per_ligand_scatter.png" alt="Leave-one-ligand-out predicted vs true yield for four Buchwald ligands" />
+      </div>
+      <p class="conclusion">BrettPhos-family panels hug the diagonal. XPhos predictions are uncorrelated with true yield. Four Buchwald ligands are not a universal ligand encoder.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Unseen additives: multi-component fingerprints help 17 of 22</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bh_loao_delta_rmse.png" alt="Leave-one-additive-out RMSE difference one-hot minus multi-FP" />
+      </div>
+      <p class="conclusion">Green bars are lower multi-FP RMSE. Median leave-one-additive R² rises from 0.69 (one-hot) to 0.77 (multi-FP). Structure on the additive is the diversity that actually moves.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Concatenated leave-one-additive-out parity</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bh_loao_scatter.png" alt="Leave-one-additive-out predicted vs true yield" />
+      </div>
+      <p class="conclusion">Pooled LOAO R² improves from 0.616 (one-hot) to 0.698 (multi-FP). Residual scatter remains large at mid yields; additive structure is useful, not sufficient.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Suzuki–Miyaura RMSE under chemically meaningful splits</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/suzuki_rmse_by_split.png" alt="Suzuki RMSE by split and model" />
+      </div>
+      <p class="conclusion">Random 5-fold multi-FP R² is 0.855 (RMSE 10.70). Leave-one-reagent stays easy (R² 0.76). Leave-one-ligand and leave-one-solvent collapse; fingerprints do not beat one-hot on unseen ligands.</p>
+    </section>
+
+    <section class="slide" data-sec="HTE">
+      <div class="kicker">Public HTE · figure</div>
+      <h2>Suzuki leave-one-ligand-out: Xantphos breaks every model</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/suzuki_lolo_per_ligand.png" alt="Suzuki leave-one-ligand-out RMSE by ligand" />
+      </div>
+      <p class="conclusion">Xantphos is bidentate and every model goes negative (multi-FP R² −3.98, RMSE 38.1). Named-ligand Morgan fingerprints are not a universal ligand encoder across mono- and bis-phosphines.</p>
+    </section>
+
+    <section class="slide" data-sec="Uncertainty">
+      <div class="kicker">Uncertainty · figure</div>
+      <h2>Split conformal coverage matches the nominal 80% and 90% levels</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/conformal_coverage.png" alt="Split conformal empirical coverage versus target" />
+      </div>
+      <p class="conclusion">Multi-FP XGB, random hold-out: 80% interval coverage 0.796 (mean width 16.3, q̂ 8.14); 90% coverage 0.891 (mean width 22.8). Test RMSE 7.73, R² 0.922.</p>
+    </section>
+
+    <section class="slide" data-sec="BO">
+      <div class="kicker">Discrete BO · figure</div>
+      <h2>Retrospective simple regret on BH reaction 0</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bo_regret.png" alt="Retrospective discrete BO simple regret" />
+      </div>
+      <p class="conclusion">Pool n=790, global max 86.60, 8 seeds, 20 random init + 28 steps. Final best yield: random 81.84 ± 2.23, greedy 83.84 ± 2.49, UCB 84.31 ± 2.49, EI 83.55 ± 2.25. Pool simulation, not a wet experiment.</p>
+    </section>
+
+    <section class="slide" data-sec="BO">
+      <div class="kicker">Discrete BO · figure</div>
+      <h2>Best observed yield vs evaluations after initialization</h2>
+      <div class="fig-stage">
+        <img src="hte_scientific_outputs/figures/bo_campaign.png" alt="Discrete BO campaign mean plus or minus std over seeds" />
+      </div>
+      <p class="conclusion">The pool is already rich: random initialization starts near 79. Acquisition policies finish 2–2.5 yield points above random and still short of the 86.6 pool maximum. This is ranking, not DOE replacement.</p>
+    </section>
+
+    <section class="slide" data-sec="Close">
+      <div class="kicker">Limits that are also results</div>
+      <h2>What is established, and where the models stop</h2>
+      <div class="row c2 fill">
+        <div class="card">
+          <h3>Established</h3>
           <ul class="small">
-            <li>Descriptor interpretation on 237 Kraken ligands</li>
-            <li>Live four-model predict + group weights</li>
-            <li>Yield surrogate with bootstrap uncertainty</li>
-            <li>EI ranking over a discrete BH pool</li>
+            <li>Kraken XGBoost R² 0.857 on <span class="mono">vbur_ratio_vbur_vtot</span></li>
+            <li>BH multi-FP interpolation R² 0.938; additive transfer 17/22</li>
+            <li>BrettPhos-family LOLO works; XPhos and Xantphos do not</li>
+            <li>Split conformal is empirically calibrated</li>
+            <li>UCB beats random in an 8-seed retrospective pool</li>
           </ul>
         </div>
         <div class="card">
-          <h3>Do not over-claim</h3>
+          <h3>Model limits</h3>
           <ul class="small">
-            <li>Track A label is a buried-volume ratio</li>
-            <li>GNN is wired and currently loses to trees</li>
-            <li>Scaffold split is the honest generalization number</li>
-            <li>BO here does not invent ligands</li>
+            <li>The Kraken AF label is a buried-volume ratio, not yield</li>
+            <li>GNN R² is −0.45 on reaction 0 and 0.08–0.19 on the full table</li>
+            <li>Dashboard scaffold RMSE 14.19 is the honest 790-row number</li>
+            <li>Discrete BO ranks existing condition tuples</li>
+            <li>Suzuki area% and BH isolated yield are not the same physical quantity</li>
           </ul>
         </div>
       </div>
-      <div class="card" style="margin-top:16px;">
-        <p class="small"><span class="chip">Dashboard</span> <span class="mono">python3 ligand_interactive_dashboard.py</span> &nbsp; <span class="chip">These slides</span> <span class="mono">ligand_dashboard_slides_en.html</span></p>
-      </div>
-      <div class="note">Questions: which track do you want to stress-test next — new ligands, or a new reaction table?</div>
+      <div class="note">ligand_dashboard_slides_en.html · figures are relative paths from the repo root</div>
     </section>
   </div>
 
   <div class="nav">
-    <span id="prev">←</span>
-    <div id="dots"></div>
-    <span id="next">→</span>
+    <button type="button" id="prev" aria-label="Previous">←</button>
+    <div class="dots" id="dots"></div>
+    <button type="button" id="next" aria-label="Next">→</button>
     <span id="pg"></span>
   </div>
 
@@ -347,18 +533,29 @@
     let i = 0;
     const q = new URLSearchParams(location.search).get("s");
     if (q && !Number.isNaN(Number(q))) i = Math.max(0, Math.min(slides.length - 1, Number(q) - 1));
-    slides.forEach((_, idx) => {
+
+    slides.forEach((s, idx) => {
       const d = document.createElement("div");
       d.className = "dot";
+      d.title = (idx + 1) + " · " + (s.dataset.sec || "");
       d.onclick = () => show(idx);
       dots.appendChild(d);
+      const foot = document.createElement("div");
+      foot.className = "foot";
+      foot.textContent = (s.dataset.sec || "") + "  ·  " + (idx + 1) + " / " + slides.length;
+      s.appendChild(foot);
     });
+
     function show(n) {
       i = (n + slides.length) % slides.length;
       slides.forEach((s, k) => s.classList.toggle("on", k === i));
       [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
       document.getElementById("pg").textContent = (i + 1) + " / " + slides.length;
+      const url = new URL(location.href);
+      url.searchParams.set("s", String(i + 1));
+      history.replaceState(null, "", url);
     }
+
     document.getElementById("prev").onclick = () => show(i - 1);
     document.getElementById("next").onclick = () => show(i + 1);
     document.addEventListener("keydown", (e) => {
@@ -367,6 +564,10 @@
       if (e.key === "Home") show(0);
       if (e.key === "End") show(slides.length - 1);
       if (e.key === "p" || e.key === "P") window.print();
+      if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+        else document.exitFullscreen().catch(() => {});
+      }
     });
     let touchX = null;
     document.addEventListener("touchstart", (e) => { touchX = e.changedTouches[0].screenX; });
@@ -376,6 +577,12 @@
       if (dx < -40) show(i + 1);
       if (dx > 40) show(i - 1);
       touchX = null;
+    });
+    document.getElementById("deck").addEventListener("click", (e) => {
+      if (e.target.closest(".dot, button, a, img")) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      if (e.clientX > rect.left + rect.width * 0.62) show(i + 1);
+      else if (e.clientX < rect.left + rect.width * 0.38) show(i - 1);
     });
     show(i);
   </script>
