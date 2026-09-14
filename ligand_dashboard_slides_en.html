@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ligand Feature Modeling — Demo Slides</title>
+  <style>
+    :root {
+      --navy: #0f172a;
+      --blue: #1d4ed8;
+      --ink: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --bg: #0b1220;
+      --card: #ffffff;
+      --soft: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+    .deck { height: 100%; display: flex; align-items: center; justify-content: center; padding: 18px 18px 48px; }
+    .slide {
+      display: none;
+      width: min(1280px, 96vw);
+      height: min(720px, calc(96vh - 36px));
+      background: var(--card);
+      border-radius: 14px;
+      padding: 42px 52px 36px;
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .slide.on { display: flex; flex-direction: column; }
+    .slide.title-slide { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #fff; }
+    .kicker { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 10px; }
+    .title-slide .kicker { color: #93c5fd; }
+    h1 { font-size: 46px; line-height: 1.15; margin: 0 0 14px; }
+    h2 { font-size: 34px; margin: 0 0 18px; letter-spacing: -.02em; }
+    h3 { font-size: 18px; margin: 0 0 8px; }
+    p, li { font-size: 22px; line-height: 1.4; }
+    .sub { font-size: 22px; color: #dbeafe; max-width: 920px; }
+    .muted { color: var(--muted); }
+    .row { display: grid; gap: 16px; }
+    .c2 { grid-template-columns: 1fr 1fr; }
+    .c3 { grid-template-columns: 1fr 1fr 1fr; }
+    .c4 { grid-template-columns: repeat(4, 1fr); }
+    .card { background: var(--soft); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+    .title-slide .card { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+    .kpi { font-size: 40px; font-weight: 750; color: var(--navy); line-height: 1; margin: 8px 0 6px; }
+    .kpi small { font-size: 16px; font-weight: 600; color: var(--muted); }
+    .bar { height: 12px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .bar > i { display: block; height: 100%; background: var(--blue); }
+    table { width: 100%; border-collapse: collapse; font-size: 18px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
+    .note { margin-top: auto; font-size: 16px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; }
+    .title-slide .note { border-color: rgba(255,255,255,.2); color: #cbd5e1; }
+    .chip { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--muted); margin-right: 6px; }
+    .warn { background: #fff7ed; border-color: #fdba74; }
+    .good { color: #047857; }
+    .bad { color: #b91c1c; }
+    .nav {
+      position: fixed; left: 0; right: 0; bottom: 10px;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
+      color: #94a3b8; font-size: 13px; user-select: none;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #334155; cursor: pointer; }
+    .dot.on { background: #93c5fd; }
+    .help { position: fixed; top: 12px; right: 16px; color: #64748b; font-size: 12px; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 6px 0; }
+    .small { font-size: 17px; line-height: 1.45; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; }
+    @media print {
+      body { background: #fff; }
+      .deck { display: block; padding: 0; }
+      .slide { display: flex !important; width: 1280px; height: 720px; margin: 0 auto 16px; box-shadow: none; page-break-after: always; border-radius: 0; }
+      .nav, .help { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="help">← → Space  ·  Home/End  ·  P print</div>
+  <div class="deck" id="deck">
+
+    <section class="slide title-slide on">
+      <div class="kicker">Technical demo  ·  ligand dashboard</div>
+      <h1>Ligand feature modeling,<br>interpretation, and discrete BO</h1>
+      <p class="sub">English slide version of the interactive dashboard: prediction, explanation, and next-experiment ranking in one story.</p>
+      <div class="row c3" style="margin-top:28px;">
+        <div class="card"><h3>Track A</h3><p class="small">Kraken descriptors → XGBoost / attention / SMILES hybrid</p></div>
+        <div class="card"><h3>Track B</h3><p class="small">Public BH yields → RDKit fingerprints + bootstrap + EI</p></div>
+        <div class="card"><h3>Use</h3><p class="small">Show what the live dashboard does, with the actual numbers behind it.</p></div>
+      </div>
+      <div class="note">Same content as ligand_interactive_dashboard.py · press → to advance</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Agenda</div>
+      <h2>Five blocks, same order as the demo page</h2>
+      <div class="row c2" style="flex:1;">
+        <div class="card">
+          <ol>
+            <li>Base-model performance</li>
+            <li>Base-model figures — how to read them</li>
+            <li>Interactive prediction</li>
+            <li>RDKit + PyG + discrete BO</li>
+            <li>Talk track for the room</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>How to use this deck</h3>
+          <p class="small">This is the presentation layer. The dashboard is the live layer: paste a SMILES, get a label, then rank a discrete condition pool with EI.</p>
+          <p class="small muted">If someone asks for a click-through, switch to the running dashboard after slide 7.</p>
+        </div>
+      </div>
+      <div class="note">Do not mix the two labels. Track A is not experimental yield.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">1 · Base model · data</div>
+      <h2>Kraken monophosphines, 17 descriptors</h2>
+      <div class="row c4">
+        <div class="card"><div class="muted">Ligands</div><div class="kpi">237</div><div class="muted">train / val / test 141 / 48 / 48</div></div>
+        <div class="card"><div class="muted">Features</div><div class="kpi">17</div><div class="muted">Excel columns O–AE</div></div>
+        <div class="card"><div class="muted">SMILES</div><div class="kpi">J</div><div class="muted">used only in the hybrid model</div></div>
+        <div class="card warn"><div class="muted">Label (AF)</div><div class="kpi" style="font-size:26px;margin-top:12px;">vbur ratio</div><div class="muted">buried-volume ratio, not yield</div></div>
+      </div>
+      <div class="row c2" style="margin-top:16px;">
+        <div class="card">
+          <h3>Attention groups</h3>
+          <p class="small">O–Q (3) · R–T (3) · U–W (3) · X–AE (8)</p>
+          <p class="small muted">Groups are treated as tokens so we can say which descriptor family the network is using.</p>
+        </div>
+        <div class="card">
+          <h3>Why this track still matters</h3>
+          <p class="small">It is the fast, interpretable layer: steric / solvation / electronic descriptors, group weights, 2D embedding. Use it to talk chemistry, not to claim a process yield.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">1 · Base model · methods</div>
+      <h2>Four estimators, one comparison table</h2>
+      <div class="row c2">
+        <div class="card">
+          <h3>XGBoost</h3>
+          <p class="small">Strong small-n baseline. Feature importances are the first thing a chemist can argue with.</p>
+        </div>
+        <div class="card">
+          <h3>Descriptor attention</h3>
+          <p class="small">Each group is a token. Self-attention returns group weights. Weaker fit, used for explanation.</p>
+        </div>
+        <div class="card">
+          <h3>SMILES + descriptor hybrid</h3>
+          <p class="small">BiGRU over characters + the 17-D vector. Tests whether structure adds anything beyond Kraken descriptors.</p>
+        </div>
+        <div class="card">
+          <h3>Ensemble average</h3>
+          <p class="small">Mean of the three. More stable than attention alone; does not beat XGBoost on this split.</p>
+        </div>
+      </div>
+      <div class="note">Dashboard section: “1) Base-model performance”.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">1 · Base model · held-out test</div>
+      <h2>XGBoost is the workhorse</h2>
+      <div class="row c4">
+        <div class="card"><h3>XGBoost</h3><div class="kpi">0.857</div><div class="muted">R² · RMSE 0.0182 · MAE 0.0145</div></div>
+        <div class="card"><h3>SMILES hybrid</h3><div class="kpi">0.760</div><div class="muted">R² · RMSE 0.0237</div></div>
+        <div class="card"><h3>Ensemble avg</h3><div class="kpi">0.826</div><div class="muted">R² · RMSE 0.0201</div></div>
+        <div class="card"><h3>Attention</h3><div class="kpi">0.542</div><div class="muted">R² · RMSE 0.0327</div></div>
+      </div>
+      <div class="card" style="margin-top:18px;">
+        <table>
+          <thead><tr><th>Model</th><th>RMSE</th><th>MAE</th><th>R²</th><th>Role in the demo</th></tr></thead>
+          <tbody>
+            <tr><td>XGBoost</td><td>0.0182</td><td>0.0145</td><td class="good">0.8574</td><td>Quote this number</td></tr>
+            <tr><td>SMILES hybrid</td><td>0.0237</td><td>0.0173</td><td>0.7599</td><td>Structure adds signal</td></tr>
+            <tr><td>Ensemble avg</td><td>0.0201</td><td>0.0151</td><td>0.8261</td><td>Stability, not SOTA</td></tr>
+            <tr><td>Descriptor attention</td><td>0.0327</td><td>0.0230</td><td>0.5424</td><td>Group weights only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">1 · Base model · explanation</div>
+      <h2>Top features and group attention</h2>
+      <div class="row c2" style="flex:1;">
+        <div class="card">
+          <h3>XGBoost importance</h3>
+          <div class="small" style="margin-top:10px;">
+            <div>sterimol_B1 <b>0.260</b></div><div class="bar"><i style="width:100%"></i></div>
+            <div style="margin-top:8px;">E_solv_total <b>0.185</b></div><div class="bar"><i style="width:71%"></i></div>
+            <div style="margin-top:8px;">sterimol_B5 <b>0.118</b></div><div class="bar"><i style="width:45%"></i></div>
+            <div style="margin-top:8px;">sterimol_burL <b>0.076</b></div><div class="bar"><i style="width:29%"></i></div>
+            <div style="margin-top:8px;">vbur_vbur.2 <b>0.073</b></div><div class="bar"><i style="width:28%"></i></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Mean group attention</h3>
+          <p class="small">O–Q 0.25 · R–T 0.15 · <b>U–W 0.32</b> · X–AE 0.28</p>
+          <p class="small">Shape (Sterimol / buried volume) and solvation/electronics move together. Attention is not the best predictor; it is the map of which family the network leaned on.</p>
+          <p class="small muted">Dashboard table: Top Features (XGBoost). Chart: group attention after a live predict.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">2 · Base-model figures</div>
+      <h2>What to say on each plot</h2>
+      <div class="row c2">
+        <div class="card">
+          <h3>2D embedding (t-SNE)</h3>
+          <p class="small">Ask whether similar labels cluster. If they do, the latent space is usable for candidate shortlists.</p>
+        </div>
+        <div class="card">
+          <h3>Actual vs predicted</h3>
+          <p class="small">Closer to the diagonal is better. Large outliers are the next debug list, not decoration.</p>
+        </div>
+        <div class="card">
+          <h3>Performance comparison</h3>
+          <p class="small">XGBoost is the stable head. Sequence and attention are complements, not replacements.</p>
+        </div>
+        <div class="card">
+          <h3>Group-attention heatmap</h3>
+          <p class="small">If different ligands light up different groups, split the next experimental batch by mechanism, not by a single global ranking.</p>
+        </div>
+      </div>
+      <div class="note">Live dashboard serves these from ligand_outputs/figures/. Missing files mean the base pipeline has not been re-run in this checkout.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">3 · Interactive prediction</div>
+      <h2>What the live box actually does</h2>
+      <div class="row c2">
+        <div class="card">
+          <h3>Input</h3>
+          <p class="small">SMILES + 17 comma-separated descriptors, same order as the training columns.</p>
+          <p class="mono">sterimol_L, B1, B5, burL, burB1, burB5, vbur…, nmr_P, fmo_μ, fmo_η, nbo, vmin, E_solv, …</p>
+        </div>
+        <div class="card">
+          <h3>Output</h3>
+          <p class="small">Four numbers: XGBoost, attention, SMILES hybrid, ensemble average — plus the four group weights as a bar chart.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h3>Demo move</h3>
+        <p class="small">Click <b>Load sample</b> (first Kraken row) → <b>Run prediction</b>. Then say: “this is a buried-volume-ratio prior, not a Buchwald yield.” Switch to the BO panel for yield.</p>
+      </div>
+      <div class="note">API on the dashboard: POST /api/predict</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">4 · RDKit + PyG + BO</div>
+      <h2>True-yield track on Doyle BH, reaction 0</h2>
+      <div class="row c3">
+        <div class="card"><div class="muted">Public reactions used</div><div class="kpi">790</div><div class="muted">one product / reaction id 0</div></div>
+        <div class="card"><div class="muted">Bootstrap XGB + Morgan</div><div class="kpi">0.932</div><div class="muted">test R² · RMSE 7.84</div></div>
+        <div class="card"><div class="muted">PyG GNN</div><div class="kpi bad">−0.45</div><div class="muted">R² · RMSE 36.1 · not the workhorse</div></div>
+      </div>
+      <div class="row c2" style="margin-top:16px;">
+        <div class="card">
+          <h3>Random-split k-fold</h3>
+          <p class="small">RMSE 9.26 · R² 0.90. This is interpolation over the same four ligands.</p>
+        </div>
+        <div class="card">
+          <h3>Murcko scaffold GroupKFold</h3>
+          <p class="small">RMSE <b>14.19</b> · R² <b>0.71</b> (fold-level 0.90 and 0.51). Quote this, not 0.93, when someone asks about new chemistry.</p>
+        </div>
+      </div>
+      <div class="note">Dashboard cards: Bootstrap / PyG GNN / Scaffold CV. Quantile 80% coverage on that split was 0.78.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">4 · Discrete recommendations</div>
+      <h2>EI-ranked next experiments (reaction 0)</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Ligand</th><th>ArX</th><th>True y</th><th>Pred</th><th>Std</th><th>EI</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>tBuXPhos</td><td>4-Et-C6H4-I</td><td>84.9</td><td>86.3</td><td>2.74</td><td>0.95</td></tr>
+          <tr><td>2</td><td>AdBrettPhos</td><td>4-Et-C6H4-I</td><td>83.1</td><td>86.1</td><td>2.60</td><td>0.81</td></tr>
+          <tr><td>3</td><td>tBuXPhos</td><td>4-Et-C6H4-Br</td><td>86.6</td><td>81.8</td><td>5.02</td><td>0.45</td></tr>
+          <tr><td>4</td><td>AdBrettPhos</td><td>4-Et-C6H4-I</td><td>82.6</td><td>84.8</td><td>2.44</td><td>0.33</td></tr>
+          <tr><td>5</td><td>AdBrettPhos</td><td>4-Et-C6H4-I</td><td>85.9</td><td>85.4</td><td>1.66</td><td>0.22</td></tr>
+        </tbody>
+      </table>
+      <p class="small muted" style="margin-top:12px;">Shared pattern in the top rows: MTBD base, isoxazole additives, 4-ethyl haloarene. This is ranking inside an existing combinatorial pool — not a new molecule generator.</p>
+      <div class="note">Dashboard buttons: Load BO sample · Run RDKit+PyG prediction · Recommend next candidates. APIs: /api/bo2/predict, /api/bo2/suggest</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">5 · Talk track</div>
+      <h2>What to say, in this order</h2>
+      <div class="card" style="flex:1;">
+        <p>Bottom line: we run two tracks in one interface — base interpretation, and RDKit/PyG true-yield modeling.</p>
+        <p>Base track is stable. The features a chemist should argue with first are <b>sterimol_B1 (0.260)</b>, <b>E_solv_total (0.185)</b>, and <b>sterimol_B5 (0.118)</b>.</p>
+        <p>The yield track uses Murcko scaffold checks. Mean scaffold RMSE is about <b>14.2</b> yield points, not the random-split 7.8.</p>
+        <p>For a next wet-lab shortlist, take the EI table — starting with tBuXPhos / AdBrettPhos × 4-ethyl-iodobenzene × MTBD — then look at the uncertainty column, not only the mean.</p>
+      </div>
+      <div class="note">Copied from the dashboard English talk track, with the real scaffold RMSE filled in.</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Close</div>
+      <h2>What is ready, what is not</h2>
+      <div class="row c2">
+        <div class="card">
+          <h3>Ready to show</h3>
+          <ul class="small">
+            <li>Descriptor interpretation on 237 Kraken ligands</li>
+            <li>Live four-model predict + group weights</li>
+            <li>Yield surrogate with bootstrap uncertainty</li>
+            <li>EI ranking over a discrete BH pool</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Do not over-claim</h3>
+          <ul class="small">
+            <li>Track A label is a buried-volume ratio</li>
+            <li>GNN is wired and currently loses to trees</li>
+            <li>Scaffold split is the honest generalization number</li>
+            <li>BO here does not invent ligands</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <p class="small"><span class="chip">Dashboard</span> <span class="mono">python3 ligand_interactive_dashboard.py</span> &nbsp; <span class="chip">These slides</span> <span class="mono">ligand_dashboard_slides_en.html</span></p>
+      </div>
+      <div class="note">Questions: which track do you want to stress-test next — new ligands, or a new reaction table?</div>
+    </section>
+  </div>
+
+  <div class="nav">
+    <span id="prev">←</span>
+    <div id="dots"></div>
+    <span id="next">→</span>
+    <span id="pg"></span>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const dots = document.getElementById("dots");
+    let i = 0;
+    const q = new URLSearchParams(location.search).get("s");
+    if (q && !Number.isNaN(Number(q))) i = Math.max(0, Math.min(slides.length - 1, Number(q) - 1));
+    slides.forEach((_, idx) => {
+      const d = document.createElement("div");
+      d.className = "dot";
+      d.onclick = () => show(idx);
+      dots.appendChild(d);
+    });
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => s.classList.toggle("on", k === i));
+      [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+      document.getElementById("pg").textContent = (i + 1) + " / " + slides.length;
+    }
+    document.getElementById("prev").onclick = () => show(i - 1);
+    document.getElementById("next").onclick = () => show(i + 1);
+    document.addEventListener("keydown", (e) => {
+      if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); show(i + 1); }
+      if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+      if (e.key === "Home") show(0);
+      if (e.key === "End") show(slides.length - 1);
+      if (e.key === "p" || e.key === "P") window.print();
+    });
+    let touchX = null;
+    document.addEventListener("touchstart", (e) => { touchX = e.changedTouches[0].screenX; });
+    document.addEventListener("touchend", (e) => {
+      if (touchX == null) return;
+      const dx = e.changedTouches[0].screenX - touchX;
+      if (dx < -40) show(i + 1);
+      if (dx > 40) show(i - 1);
+      touchX = null;
+    });
+    show(i);
+  </script>
+</body>
+</html>
